@@ -1,14 +1,20 @@
 require 'mastodon'
 require 'oauth2'
+require_relative 'lib'
 require 'pry'
 
 
+client_details = ClientDetails.new
+client_details.populate
+puts "loaded: #{client_details}"
+
 # check if we already have client id and secret
-puts "reading"
-client_id, client_secret = File.read('./.creds.txt').split(' ') rescue []
-client_details = OpenStruct.new client_id: client_id,
-                                client_secret: client_secret
-puts "read: #{client_details}"
+# puts "reading"
+# client_id, client_secret = File.read('./.creds.txt').split(' ') rescue []
+# client_details = OpenStruct.new client_id: client_id,
+#                                 client_secret: client_secret
+
+# puts "read: #{client_details}"
 
 base_url = ENV['BASE_URL']
 raise "Missing BASE_URL" if base_url.nil?
@@ -17,16 +23,15 @@ client = Mastodon::REST::Client.new(base_url: base_url)
 # create application if we don't
 if client_details.client_id.nil?
   puts "creating app"
-  client_details = client.create_app('codebot',
-                                     'urn:ietf:wg:oauth:2.0:oob',
-                                     'read write')
+  retrieved_client_details = client.create_app('codebot',
+                                               'urn:ietf:wg:oauth:2.0:oob',
+                                               'read write')
+  client_details.update_from retrieved_client_details
   puts "client_details: #{client_details}"
   puts " client_id: #{client_details.client_id}"
   puts " client_secret: #{client_details.client_secret}"
   puts "writing"
-  File.open('./.creds.txt', 'w') do |fh|
-    fh.write("#{client_details.client_id} #{client_details.client_secret}")
-  end
+  client_details.save
   puts "done writing"
 end
 
@@ -57,14 +62,15 @@ puts "logged in! [#{token_details.token}]"
 client = Mastodon::REST::Client.new(base_url: base_url,
                                     bearer_token: token_details.token)
 
+
 # post toot via user
 path = File.absolute_path("./robot.jpg")
 puts "uploading image: #{path}"
 media = client.upload_media(path)
 puts "uploaded success: #{media.id} #{media.preview_url}"
 puts "tooting"
-#status = client.create_status("bot test")
-client.create_status("bot test (with image)",nil,[media.id])
+client.create_status("bot test")
+#client.create_status("bot test (with image)",nil,[media.id])
 
 
 puts
