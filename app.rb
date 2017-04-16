@@ -60,8 +60,7 @@ client = Mastodon::REST::Client.new(base_url: base_url,
 # post toot via user
 path = File.absolute_path("./robot.jpg")
 puts "uploading image: #{path}"
-image = HTTP::FormData::File.new(path)
-media = client.upload_media(image)
+media = client.upload_media(path)
 puts "uploaded success: #{media.id} #{media.preview_url}"
 puts "tooting"
 #status = client.create_status("bot test")
