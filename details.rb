@@ -4,9 +4,9 @@ class Details
 
   attr_accessor :sources, :attrs
 
-  def initialize sources, attrs
-    self.sources = sources
-    self.attrs = attrs
+  def initialize
+    self.sources = _sources
+    self.attrs   = _attrs
     setup_accessors
   end
 

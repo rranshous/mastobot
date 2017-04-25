@@ -1,6 +1,5 @@
 require 'mastodon'
 require 'oauth2'
-require_relative 'mastodon_client'
 require_relative 'lib'
 
 
@@ -10,6 +9,7 @@ puts "client: #{client_details}"
 
 server_details = ServerDetails.new
 server_details.populate
+server_details.save
 raise "Missing BASE_URL" if server_details.base_url.nil?
 client = Mastodon::REST::Client.new(base_url: server_details.base_url)
 puts "server: #{server_details}"
