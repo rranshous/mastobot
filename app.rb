@@ -19,32 +19,21 @@ if client_details.client_id.nil?
                                                'urn:ietf:wg:oauth:2.0:oob',
                                                'read write')
   client_details.merge retrieved_client_details
-  puts "client_details: #{client_details}"
-  puts " client_id: #{client_details.client_id}"
-  puts " client_secret: #{client_details.client_secret}"
-  puts "writing"
   client_details.save
-  puts "done writing"
+  puts "client_details: #{client_details}"
 end
 
 # log user in through application
-user_details = OpenStruct.new(username: ENV['OAUTH_USERNAME'],
-                              password: ENV['OAUTH_PASSWORD'])
-if user_details.username.nil?
-  write "username: "
-  user_details.username = gets.chomp
-end
-if user_details.password.nil?
-  write "password: "
-  user_details.password = gets.chomp
-  puts "logging in user"
-end
+user_details = UserDetails.new
+user_details.populate
+user_details.save
 puts "logging in: #{user_details}"
 
 # use oauth2 to log in user
 oauth_client = OAuth2::Client.new(client_details.client_id,
                                   client_details.client_secret,
                                   site: 'https://offilth.stream')
+
 token_details = oauth_client.password.get_token(user_details.username,
                                                 user_details.password,
                                                 scope: 'write read')

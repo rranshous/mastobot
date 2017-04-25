@@ -40,7 +40,7 @@ class Details
   end
 
   def to_s
-    "<#{self.class.name} #{client_id} #{client_secret}>"
+    "<#{self.class.name} #{attrs.map{|a| self.send(a)}.join(' ')}>"
   end
   alias_method :inspect, :to_s
 
@@ -84,6 +84,14 @@ class ClientDetails < Details
   def initialize
     sources = [ file('.client_creds.yml'), env ]
     attrs = [ :client_id, :client_secret ]
+    super sources, attrs
+  end
+end
+
+class UserDetails < Details
+  def initialize
+    sources = [ file('.user_creds.yml'), env, prompt ]
+    attrs = [ :username, :password ]
     super sources, attrs
   end
 end
@@ -149,7 +157,7 @@ end
 
 class CredsEnv
   def get *tokens
-    tokens.map{ |t| ENV["OAUTH_#{t.upcase}"] }
+    tokens.map{ |t| ENV[t.to_s.upcase] }
   end
 
   def set k, v
