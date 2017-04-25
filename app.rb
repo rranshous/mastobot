@@ -8,14 +8,6 @@ client_details = ClientDetails.new
 client_details.populate
 puts "loaded: #{client_details}"
 
-# check if we already have client id and secret
-# puts "reading"
-# client_id, client_secret = File.read('./.creds.txt').split(' ') rescue []
-# client_details = OpenStruct.new client_id: client_id,
-#                                 client_secret: client_secret
-
-# puts "read: #{client_details}"
-
 base_url = ENV['BASE_URL']
 raise "Missing BASE_URL" if base_url.nil?
 client = Mastodon::REST::Client.new(base_url: base_url)
@@ -26,7 +18,7 @@ if client_details.client_id.nil?
   retrieved_client_details = client.create_app('codebot',
                                                'urn:ietf:wg:oauth:2.0:oob',
                                                'read write')
-  client_details.update_from retrieved_client_details
+  client_details.merge retrieved_client_details
   puts "client_details: #{client_details}"
   puts " client_id: #{client_details.client_id}"
   puts " client_secret: #{client_details.client_secret}"

@@ -3,53 +3,89 @@ require 'oauth2'
 require 'yaml'
 
 
-class ClientDetails
+class Details
 
-  attr_accessor :client_id, :client_secret
+  attr_accessor :sources, :attrs
+
+  def initialize sources, attrs
+    self.sources = sources
+    self.attrs = attrs
+    setup_accessors
+  end
+
+  def setup_accessors
+    attrs.each do |attr|
+      self.class.class_eval do
+        attr_accessor attr.to_sym
+      end
+    end
+  end
 
   def populate
-    populate_from(env) or populate_from(file)
+    sources.each do |source|
+      break if fully_populated?
+      populate_from source
+    end
   end
 
   def save
-    save_to(file)
+    sources.each{|s| save_to s }
   end
 
-  def update_from details
-    self.client_id = details.client_id
-    self.client_secret = details.client_secret
+  def merge details, *attrs
+    attrs.each do |attr|
+      value = details.send attr.to_sym
+      self.send "#{attr}=", value
+    end
   end
 
   def to_s
-    "<ClientDetails #{client_id} #{client_secret}>"
+    "<#{self.class.name} #{client_id} #{client_secret}>"
   end
   alias_method :inspect, :to_s
 
   private
 
   def save_to source
-    source.set :client_id, client_id
-    source.set :client_secret, client_secret
+    attrs.each do |attr|
+      source.set attr, self.send(attr)
+    end
   end
 
   def populate_from source
-    puts "populating from #{source}"
-    self.client_id, self.client_secret = source.get(:client_id, :client_secret)
-    client_id && client_secret
+    attrs.zip(source.get(*attrs)).each do |attr, value|
+      self.send "#{attr}=", value
+    end
   end
 
-  def file
-    CredsFile.new
+  def fully_populated?
+    filled_attrs.length == attrs.length
   end
 
-  def prompt
-    CredsPrompt.new
+  def filled_attrs
+    attrs.select{ |a| self.send a }
   end
 
-  def env
-    CredsEnv.new
+  def file *args
+    CredsFile.new(*args)
   end
 
+  def prompt *args
+    CredsPrompt.new(*args)
+  end
+
+  def env *args
+    CredsEnv.new(*args)
+  end
+
+end
+
+class ClientDetails < Details
+  def initialize
+    sources = [ file('.client_creds.yml'), env ]
+    attrs = [ :client_id, :client_secret ]
+    super sources, attrs
+  end
 end
 
 class CredsFile
