@@ -44,7 +44,9 @@ rest_client = Mastodon::REST::Client.new(base_url: server_details.base_url,
                                          bearer_token: token_details.token)
 
 mastodon_client = MastodonClient.new rest_client
+mastodon_client.toot_nsfw_image './robot_nsfw.jpg', 'robot love'
 mastodon_client.toot_image './robot.jpg', 'bot test (with image)'
+mastodon_client.toot 'bot test'
 
 puts
 puts "DONE"
