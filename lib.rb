@@ -32,7 +32,7 @@ class Details
     sources.each{|s| save_to s }
   end
 
-  def merge details, *attrs
+  def merge details
     attrs.each do |attr|
       value = details.send attr.to_sym
       self.send "#{attr}=", value
@@ -133,6 +133,9 @@ class CredsPrompt
     end
   end
 
+  def set k, v
+  end
+
   private
 
   def write msg
@@ -147,5 +150,8 @@ end
 class CredsEnv
   def get *tokens
     tokens.map{ |t| ENV["OAUTH_#{t.upcase}"] }
+  end
+
+  def set k, v
   end
 end
