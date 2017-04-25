@@ -90,7 +90,7 @@ end
 
 class UserDetails < Details
   def initialize
-    sources = [ file('.user_creds.yml'), env, prompt ]
+    sources = [ file('.user_creds.yml'), env('OAUTH_'), prompt ]
     attrs = [ :username, :password ]
     super sources, attrs
   end
@@ -156,10 +156,23 @@ class CredsPrompt
 end
 
 class CredsEnv
+  attr_accessor :prefix
+
+  def initialize prefix=''
+    self.prefix = prefix
+  end
+
   def get *tokens
-    tokens.map{ |t| ENV[t.to_s.upcase] }
+    tokens.map{ |t| from_env("#{prefix}#{t.to_s.upcase}") }
   end
 
   def set k, v
+  end
+
+  private
+
+  def from_env key
+    puts "from env: #{key}"
+    ENV[key]
   end
 end

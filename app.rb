@@ -20,7 +20,6 @@ if client_details.client_id.nil?
                                                'read write')
   client_details.merge retrieved_client_details
   client_details.save
-  puts "client_details: #{client_details}"
 end
 
 # log user in through application
@@ -33,7 +32,6 @@ puts "logging in: #{user_details}"
 oauth_client = OAuth2::Client.new(client_details.client_id,
                                   client_details.client_secret,
                                   site: 'https://offilth.stream')
-
 token_details = oauth_client.password.get_token(user_details.username,
                                                 user_details.password,
                                                 scope: 'write read')
@@ -50,8 +48,8 @@ puts "uploading image: #{path}"
 media = client.upload_media(path)
 puts "uploaded success: #{media.id} #{media.preview_url}"
 puts "tooting"
-client.create_status("bot test")
-#client.create_status("bot test (with image)",nil,[media.id])
+#client.create_status("bot test")
+client.create_status("bot test (with image)",nil,[media.id])
 
 
 puts
