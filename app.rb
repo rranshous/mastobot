@@ -1,16 +1,18 @@
 require 'mastodon'
 require 'oauth2'
+require_relative 'mastodon_client'
 require_relative 'lib'
-require 'pry'
 
 
 client_details = ClientDetails.new
 client_details.populate
-puts "loaded: #{client_details}"
+puts "client: #{client_details}"
 
-base_url = ENV['BASE_URL']
-raise "Missing BASE_URL" if base_url.nil?
-client = Mastodon::REST::Client.new(base_url: base_url)
+server_details = ServerDetails.new
+server_details.populate
+raise "Missing BASE_URL" if server_details.base_url.nil?
+client = Mastodon::REST::Client.new(base_url: server_details.base_url)
+puts "server: #{server_details}"
 
 # create application if we don't
 if client_details.client_id.nil?
@@ -38,19 +40,11 @@ token_details = oauth_client.password.get_token(user_details.username,
 puts "logged in! [#{token_details.token}]"
 
 # create client w/ token
-client = Mastodon::REST::Client.new(base_url: base_url,
-                                    bearer_token: token_details.token)
+rest_client = Mastodon::REST::Client.new(base_url: server_details.base_url,
+                                         bearer_token: token_details.token)
 
-
-# post toot via user
-path = File.absolute_path("./robot.jpg")
-puts "uploading image: #{path}"
-media = client.upload_media(path)
-puts "uploaded success: #{media.id} #{media.preview_url}"
-puts "tooting"
-#client.create_status("bot test")
-client.create_status("bot test (with image)",nil,[media.id])
-
+mastodon_client = MastodonClient.new rest_client
+mastodon_client.toot_image './robot.jpg', 'bot test (with image)'
 
 puts
 puts "DONE"
