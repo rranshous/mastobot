@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require_relative '../helpers'
+
+file_path = ARGV.shift
+message   = ARGV.shift || '#NSFW'
+raise "file path missing" if file_path.nil?
+raise "message missing" if message.empty?
+
+###
+
+client = get_mastodon_client()
+client.toot_nsfw_image file_path, message
